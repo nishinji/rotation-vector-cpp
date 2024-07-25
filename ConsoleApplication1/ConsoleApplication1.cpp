@@ -33,6 +33,12 @@ void printMatrix(const Matrix3x3& matrix) {
         cout << endl;
     }
 }
+void printVector(const vector<double>& vector) {
+    for (int i = 0; i < 3; ++i) {
+        cout << vector[i] << " ";
+    }
+        cout << endl;
+}
 
 // 2つのベクトルの内積を計算する関数
 double dotProduct(const vector<double>& vec1, const vector<double>& vec2) {
@@ -91,11 +97,11 @@ Matrix3x3 adjoint(const Matrix3x3& mat) {
 Matrix3x3 inverse(const Matrix3x3& mat) {
     double det = determinant(mat);
     if (det == 0) {
-        throw std::runtime_error("Matrix is singular and cannot be inverted.");
+        throw runtime_error("Matrix is singular and cannot be inverted.");
     }
 
     Matrix3x3 adj = adjoint(mat);
-    Matrix3x3 inv(3, std::vector<double>(3));
+    Matrix3x3 inv(3, vector<double>(3));
 
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
@@ -105,6 +111,7 @@ Matrix3x3 inverse(const Matrix3x3& mat) {
 
     return inv;
 }
+
 
 
 // 24個の固定行列を定義
@@ -137,19 +144,25 @@ const vector<Matrix3x3> fixedMatrices = {
 
 int main() {
     // 入力行列を定義
-    Matrix3x3 inputMatrix(3, vector<double>(3));
-    cout << "3x3行列を入力してください (例: 1 0 0 0 1 0 0 0 1 (double型)):" << endl;
+    Matrix3x3 inputMatrixA(3, vector<double>(3));
+    cout << endl;
+    cout << "一つ目の3x3行列を入力してください (例: 1 0 0 0 1 0 0 0 1 (double型)):" << endl;
     for (int i = 0; i < 3; ++i) {
         for (int j = 0; j < 3; ++j) {
-            cin >> inputMatrix[i][j];
+            if (!(cin >> inputMatrixA[i][j])) {
+                cerr << "数字以外の入力が検出されました。プログラムを終了します。" << endl;
+                return 1;  // 非ゼロの値を返してプログラムを終了
+            }
         }
     }
 
-    // 結果行列を初期化
-    Matrix3x3 resultMatrix(3, vector<double>(3));
+    cout << endl;
+    cout << "入力行列は:" << endl;
+    printMatrix(inputMatrixA);
+    cout << endl;
 
     try {
-        Matrix3x3 inv = inverse(inputMatrix);
+        Matrix3x3 inv = inverse(inputMatrixA);
         cout << "逆行列は:" << endl;
         printMatrix(inv);
         cout << endl;
@@ -158,13 +171,57 @@ int main() {
         cerr << e.what() << endl;
     }
 
-    // 各固定行列との行列の掛け算と結果の出力
-    for (int index = 0; index < fixedMatrices.size(); ++index) {
-        multiplyMatrix(inputMatrix, fixedMatrices[index], resultMatrix);
-        cout << "固定行列 V" << index + 1 << " との結果行列は:" << endl;
-        printMatrix(resultMatrix);
+    Matrix3x3 inputMatrixB(3, vector<double>(3));
+    cout << endl;
+    cout << "二つ目の3x3行列を入力してください (例: 1 0 0 0 1 0 0 0 1 (double型)):" << endl;
+    for (int i = 0; i < 3; ++i) {
+        for (int j = 0; j < 3; ++j) {
+            if (!(cin >> inputMatrixB[i][j])) {
+                cerr << "数字以外の入力が検出されました。プログラムを終了します。" << endl;
+                return 1;  // 非ゼロの値を返してプログラムを終了
+            }
+        }
+    }
+
+    cout << endl;
+    cout << "入力行列は:" << endl;
+    printMatrix(inputMatrixB);
+    cout << endl;
+
+    try {
+        Matrix3x3 inv = inverse(inputMatrixB);
+        cout << "逆行列は:" << endl;
+        printMatrix(inv);
         cout << endl;
     }
+    catch (const runtime_error& e) {
+        cerr << e.what() << endl;
+    }
+
+    // 結果行列を初期化
+    Matrix3x3 resultMatrixR(3, vector<double>(3));
+    Matrix3x3 invMatrixB = inverse(inputMatrixB);
+    multiplyMatrix(inputMatrixA, invMatrixB, resultMatrixR);
+    cout << "変換行列Rは:" << endl;
+    printMatrix(resultMatrixR);
+    cout << endl;
+
+    //// 固有ベクトルを算出
+    //cout << "Rの固有ベクトル[H, K, L]は:" << endl;
+    //vector<double> b = { 1, 1, 1 };
+    //vector<double> x0 = { 0, 0, 0 }; // 初期推定値
+    //jacobi(resultMatrixR, b, x0);
+    //printVector(x0);
+    //cout << endl;
+
+
+    //// 各固定行列との行列の掛け算と結果の出力
+    //for (int index = 0; index < fixedMatrices.size(); ++index) {
+    //    multiplyMatrix(inputMatrixA, fixedMatrices[index], resultMatrix);
+    //    cout << "固定行列 V" << index + 1 << " との結果行列は:" << endl;
+    //    printMatrix(resultMatrix);
+    //    cout << endl;
+    //}
 
     return 0;
 }
