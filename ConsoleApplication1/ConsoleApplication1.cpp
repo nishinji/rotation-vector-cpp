@@ -1,6 +1,8 @@
 ﻿#include <iostream>
 #include <corecrt_math_defines.h>
 #include <vector>
+#include <iomanip>
+#include <math.h>
 
 using namespace std;
 using Matrix3x3 = vector<vector<double>>;
@@ -112,7 +114,31 @@ Matrix3x3 inverse(const Matrix3x3& mat) {
     return inv;
 }
 
+void jacobi(const Matrix3x3& a, const vector<double>& b, vector<double>& c)
+{
+    for (int n = 0; n <= 100; n++)
+    {
+        double s[3];
+        double e = 0;
+        for (int i = 0; i <= 2; i++)
+        {
+            s[i] = b[i];
+            for (int j = 0; j <= (i - 1); j++) s[i] -= a[i][j] * c[j];
+            for (int j = i + 1; j <= 2; j++) s[i] -= a[i][j] * c[j];
+            s[i] /= a[i][i];
+            e += fabs(s[i] - c[i]);
+        }
+        for (int i = 0; i <= 2; i++)
+        {
+            c[i] = s[i];
+            cout << setw(12) << fixed << setprecision(10) << c[i] << "\t";
+        }
+        cout << endl;
 
+        if (e <= 0.0000000001) return;
+    }
+    cout << "収束しない" << endl;
+}
 
 // 24個の固定行列を定義
 const vector<Matrix3x3> fixedMatrices = {
@@ -206,14 +232,13 @@ int main() {
     printMatrix(resultMatrixR);
     cout << endl;
 
-    //// 固有ベクトルを算出
-    //cout << "Rの固有ベクトル[H, K, L]は:" << endl;
-    //vector<double> b = { 1, 1, 1 };
-    //vector<double> x0 = { 0, 0, 0 }; // 初期推定値
-    //jacobi(resultMatrixR, b, x0);
-    //printVector(x0);
-    //cout << endl;
-
+    // 固有値を求める
+    vector<double> b = { 0,0,0 };
+    vector<double> c = { 0,0,0 }; // 初期値は適当
+    jacobi(resultMatrixR, b, c);
+    cout << "固有値は:" << endl;
+    printVector(c);
+    cout << endl;
 
     //// 各固定行列との行列の掛け算と結果の出力
     //for (int index = 0; index < fixedMatrices.size(); ++index) {
